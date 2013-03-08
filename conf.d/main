@@ -41,6 +41,7 @@ updateconf memory_limit 128M
 updateconf display_errors On
 updateconf log_errors Off
 updateconf error_reporting "E_WARNING \& ~E_NOTICE \& ~E_DEPRECATED"
+sed -i "s|^; max_input_vars.*|max_input_vars = 1500|" $CONF
 
 # convenience execution variables
 MYSQL_BATCH="mysql --user=root --password=$MYSQL_PASS --batch"
