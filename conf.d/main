@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 
+ADMIN_MAIL=admin@example.com
 ADMIN_PASS=turnkey
 
 DB_NAME=vtigercrm
@@ -13,34 +14,23 @@ tar -zxf /usr/local/src/vtigercrm*.tar.gz -C /var/www/
 rm -f /usr/local/src/vtigercrm*
 
 chown -R root:root $WEBROOT
-chown -R www-data:www-data $WEBROOT/config.inc.php
-chown -R www-data:www-data $WEBROOT/tabdata.php
-chown -R www-data:www-data $WEBROOT/install.php
-chown -R www-data:www-data $WEBROOT/parent_tabdata.php
-chown -R www-data:www-data $WEBROOT/backup
-chown -R www-data:www-data $WEBROOT/cache
-chown -R www-data:www-data $WEBROOT/storage
-chown -R www-data:www-data $WEBROOT/install
-chown -R www-data:www-data $WEBROOT/user_privileges
-chown -R www-data:www-data $WEBROOT/Smarty/cache
-chown -R www-data:www-data $WEBROOT/Smarty/templates_c
-chown -R www-data:www-data $WEBROOT/Smarty/templates/modules
-chown -R www-data:www-data $WEBROOT/modules
-chown -R www-data:www-data $WEBROOT/cron/modules
-chown -R www-data:www-data $WEBROOT/test
-chown -R www-data:www-data $WEBROOT/logs
+for i in config.inc.php tabdata.php parent_tabdata.php backup cache storage user_privileges modules cron/modules test logs layouts languages; do
+    chown -R www-data:www-data $WEBROOT/$i
+done
 
 # vtiger recommended php settings
 CONF=/etc/php5/apache2/php.ini
 updateconf() {
     sed -i "s|$1 = \(.*\)|$1 = $2|" $CONF
 }
+
 updateconf allow_call_time_pass_reference On
 updateconf max_execution_time 600
 updateconf memory_limit 128M
 updateconf display_errors On
 updateconf log_errors Off
 updateconf error_reporting "E_WARNING \& ~E_NOTICE \& ~E_DEPRECATED"
+updateconf short_open_tag On
 sed -i "s|^; max_input_vars.*|max_input_vars = 1500|" $CONF
 
 # convenience execution variables
@@ -63,17 +53,35 @@ a2ensite vtigercrm
 # vtiger configuration
 /etc/init.d/apache2 start
 
-URL="http://127.0.0.1/install.php"
-CURL="curl -c /tmp/cookie -b /tmp/cookie --data"
+cat << EOF > /tmp/vtiger.twill
+go http://127.0.0.1/index.php
 
-$CURL "file=LicenceAgreement.php&install=true" $URL
-$CURL "filename=SetInstallationConfig.php&file=CheckSystem.php" $URL
-$CURL "file=SetInstallationConfig.php" $URL
-$CURL "file=ConfirmConfig.php&db_type=mysql&db_file=ConfirmConfig.php&db_type=mysql&db_hostname=127.0.0.1&db_username=$DB_USER&db_password=$DB_PASS&db_name=$DB_NAME&root_user=&root_password=&create_utf8_db=on&site_URL=http%3A%2F%2F127.0.0.1&currency_name=USA%2C+Dollars&root_directory=%2Fvar%2Fwww%2Fvtigercrm%2F&cache_dir=cache%2F&admin_password=$ADMIN_PASS&admin_email=admin@example.com" $URL
-AUTH_KEY=$($CURL "mode=installation&file=SelectOptionalModules.php" -s $URL  | grep auth_key | awk '{ print $4 }' | sed "s|value=||" | sed "s|\"||g")
-$CURL "selected_modules=SMSNotifier%3AWebforms%3AAssets%3AProjects%3ACustomerPortal%3ATooltip%3ARecycleBin%3AFieldFormulas%3AModComments&file=CreateTables.php&auth_key=$AUTH_KEY" $URL
-$CURL "file=InstallationComplete.php" $URL
-$CURL "default_user_name=admin" http://127.0.0.1/index.php
+fv 2 1 nop
+submit
+fv 2 1 nop
+submit
+fv 2 1 nop
+submit
+
+fv 2 db_hostname localhost
+fv 2 db_username $DB_USER
+fv 2 db_password $DB_PASS
+fv 2 db_name $DB_NAME
+fv 2 password $ADMIN_PASS
+fv 2 retype_password $ADMIN_PASS
+fv 2 admin_email $ADMIN_MAIL
+submit
+
+fv 2 1 nop
+submit
+
+fv 2 industry Other
+submit
+
+EOF
+
+twill-sh /tmp/vtiger.twill
+rm -f /tmp/vtiger.twill
 
 # set local smtp server
 $MYSQL_BATCH --execute "USE $DB_NAME; INSERT INTO vtiger_systems (id, server, server_port, server_username, server_password, server_type, smtp_auth, server_path, from_email_field) VALUES ('1', '127.0.0.1', '25', NULL, NULL, 'email', 'false', NULL, NULL);"
@@ -81,15 +89,6 @@ $MYSQL_BATCH --execute "USE $DB_NAME; INSERT INTO vtiger_systems (id, server, se
 # make site_url dynamic
 CONF=$WEBROOT/config.inc.php
 sed -i "s|\$site_URL = \(.*\)|\$site_URL = 'http://'.\$_SERVER['HTTP_HOST'];|" $CONF
-
-# deny access to install/migrate scripts
-mv $WEBROOT/htaccess.txt $WEBROOT/.htaccess
-cat >> $WEBROOT/.htaccess <<EOF
-<Files install.php>
-deny from all
-</Files>
-EOF
-echo "deny from all" > $WEBROOT/install/.htaccess
 
 # stop services
 /etc/init.d/apache2 stop
