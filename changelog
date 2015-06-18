@@ -1,3 +1,21 @@
+turnkey-vtiger-14.0 (1) turnkey; urgency=low
+
+  * Vtiger:
+
+    - Enabled short_open_tag.
+    - Upgraded to 6.3.0.
+    - Removed the old PHP inithook code, replaced with Python.
+
+  * Replaced cURL with twill for the web-based installation process.
+
+  * Please refer to turnkey-core's changelog for changes common to all
+    appliances, as well as the following git logs:
+    
+    - https://github.com/turnkeylinux/common
+    - https://github.com/turnkeylinux-apps/vtiger
+
+ -- Anton Pyrogovskyi <q@dae.pp.ua>  Tue, 16 Jun 2015 04:11:50 +0300
+
 turnkey-vtiger-13.0 (1) turnkey; urgency=low
 
   * Please refer to turnkey-core's changelog for changes common to all

@@ -11,8 +11,7 @@ import sys
 import getopt
 import hashlib
 from os.path import *
-import subprocess
-from subprocess import PIPE
+import crypt
 
 from dialog_wrapper import Dialog
 from mysqlconf import MySQL
@@ -64,13 +63,9 @@ def main():
 
     hashpass = hashlib.md5(password).hexdigest()
 
-    command = ["php", join(dirname(__file__), 'vt_crypt.php'), "admin", password]
-    p = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, shell=False)
-    stdout, stderr = p.communicate()
-    if stderr:
-        fatal(stderr)
-
-    cryptpass = stdout.strip()
+    # salt is a constant for 'admin'
+    salt = '$1$ad0000000'
+    cryptpass = crypt.crypt(password, salt)
 
     m = MySQL()
     m.execute('UPDATE vtigercrm.vtiger_users SET email1=\"%s\" WHERE user_name=\"admin\";' % email)

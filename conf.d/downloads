@@ -5,8 +5,8 @@ dl() {
     cd $2; curl -L -f -O $PROXY $1; cd -
 }
 
-VERSION="vtiger%20CRM%205.4.0/Core%20Product/vtigercrm-5.4.0.tar.gz"
-URL="http://sourceforge.net/projects/vtigercrm/files/$VERSION"
+VERSION="vtiger%20CRM%206.3.0/Core%20Product/vtigercrm6.3.0.tar.gz"
+URL="http://downloads.sourceforge.net/project/vtigercrm/$VERSION"
 
 dl $URL /usr/local/src
 
