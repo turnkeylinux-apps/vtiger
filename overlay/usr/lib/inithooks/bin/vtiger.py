@@ -9,6 +9,7 @@ Option:
 
 import sys
 import getopt
+import inithooks_cache
 import hashlib
 from os.path import *
 import crypt
@@ -51,6 +52,8 @@ def main():
             "Vtiger Email",
             "Enter email address for the Vtiger 'admin' account.",
             "admin@example.com")
+
+    inithooks_cache.write('APP_EMAIL', email)
 
     if not password:
         if 'd' not in locals():
