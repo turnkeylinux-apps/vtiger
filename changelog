@@ -1,3 +1,14 @@
+turnkey-vtiger-14.2 (1) turnkey; urgency=low
+
+  * Updated to new version of Vtiger (6.5.0).
+
+  * Installed security updates.
+
+  * Note: Please refer to turnkey-core's changelog for changes common to all
+    appliances. Here we only describe changes specific to this appliance.
+
+ -- Anton Pyrogovskyi <anton@turnkeylinux.org>  Sun, 26 Mar 2017 14:19:12 +0000
+
 turnkey-vtiger-14.1 (1) turnkey; urgency=low
 
   * Installed security updates.
