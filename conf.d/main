@@ -14,7 +14,7 @@ tar -zxf /usr/local/src/vtigercrm*.tar.gz -C /var/www/
 rm -f /usr/local/src/vtigercrm*
 
 chown -R root:root $WEBROOT
-for i in config.inc.php tabdata.php parent_tabdata.php backup cache storage user_privileges modules cron/modules test logs layouts languages; do
+for i in config.inc.php tabdata.php parent_tabdata.php cache storage user_privileges modules cron/modules test logs layouts languages; do
     chown -R www-data:www-data $WEBROOT/$i
 done
 
