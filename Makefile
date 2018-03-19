@@ -1,3 +1,5 @@
+PHP56 = y
+
 COMMON_CONF = apache-credit
 
 include $(FAB_PATH)/common/mk/turnkey/lamp.mk

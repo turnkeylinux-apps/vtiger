@@ -13,19 +13,23 @@ WEBROOT=/var/www/vtigercrm
 tar -zxf /usr/local/src/vtigercrm*.tar.gz -C /var/www/
 rm -f /usr/local/src/vtigercrm*
 
+# update for compatibility
+rm $WEBROOT/schema/DatabaseSchema.xml
+mv $WEBROOT/schema/DatabaseSchema2.xml $WEBROOT/schema/DatabaseSchema.xml
+
 chown -R root:root $WEBROOT
 for i in config.inc.php tabdata.php parent_tabdata.php cache storage user_privileges modules cron/modules test logs layouts languages; do
     chown -R www-data:www-data $WEBROOT/$i
 done
 
 # vtiger recommended php settings
-CONF=/etc/php5/apache2/php.ini
+CONF=/etc/php/5.6/apache2/php.ini
 updateconf() {
     sed -i "s|$1 = \(.*\)|$1 = $2|" $CONF
 }
 
 updateconf allow_call_time_pass_reference On
-updateconf max_execution_time 600
+updateconf max_execution_time 0
 updateconf memory_limit 128M
 updateconf display_errors On
 updateconf log_errors Off
@@ -37,8 +41,22 @@ sed -i "s|^; max_input_vars.*|max_input_vars = 1500|" $CONF
 MYSQL_BATCH="mysql --user=root --password=$MYSQL_PASS --batch"
 MYSQL_ADMIN="mysqladmin --user=root --password=$MYSQL_PASS"
 
+cat >> /etc/mysql/my.cnf <<EOF
+[client]
+default-character-set = utf8mb4
+[mysqld]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+innodb_large_prefix
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+skip-character-set-client-handshake
+[mysql]
+default-character-set = utf8mb4
+EOF
+
 # start mysql
-/etc/init.d/mysql start
+service mysql start
 
 # create database
 $MYSQL_ADMIN create $DB_NAME
@@ -51,7 +69,7 @@ a2dissite 000-default
 a2ensite vtigercrm
 
 # vtiger configuration
-/etc/init.d/apache2 start
+service apache2 start
 
 cat << EOF > /tmp/vtiger.twill
 go http://127.0.0.1/index.php
@@ -91,6 +109,6 @@ CONF=$WEBROOT/config.inc.php
 sed -i "s|\$site_URL = \(.*\)|\$site_URL = 'http://'.\$_SERVER['HTTP_HOST'];|" $CONF
 
 # stop services
-/etc/init.d/apache2 stop
-/etc/init.d/mysql stop
+service apache2 stop
+service mysql stop
 
