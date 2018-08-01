@@ -18,6 +18,10 @@ and on top of that:
      (security).
    - Accept any hostname as the site URL.
 
+   **Security note**: Updates to vTiger may require supervision so
+   they **ARE NOT** configured to install automatically. See `vTiger
+   documentation`_ for upgrading.
+
 - SSL support out of the box.
 - `Adminer`_ administration frontend for MySQL (listening on port
    12322 - uses SSL).
@@ -33,6 +37,7 @@ Credentials *(passwords set at first boot)*
 -  vTiger: username **admin**
 
 
-.. _vTiger: http://www.vtiger.com/
+.. _vTiger: https://www.vtiger.com/
 .. _TurnKey Core: https://www.turnkeylinux.org/core
-.. _Adminer: http://www.adminer.org/
+.. _Adminer: https://www.adminer.org/
+.. _vTiger documentation: http://community.vtiger.com/help/vtigercrm/administrators/migration.html
